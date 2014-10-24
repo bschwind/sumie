@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="target-densitydpi=device-dpi, initial-scale=1.0, user-scalable=no"/>
+		<title>Sumie</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<!-- <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script> -->
+		<script type="text/javascript" src="js/knockout-3.2.0-min.js"></script>
+	</head>
+
+	<body>
+		<div id="paint-controls">
+			<h1 data-bind="text: pageName">Sumie</h1>
+		</div>
+		<div>
+			<canvas id="ink-canvas">
+			</canvas>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		var PageModel = function() {
+			var self = this;
+
+			self.pageName = ko.observable("墨絵");
+		};
+
+		var pageModel = new PageModel();
+		ko.applyBindings(pageModel);
+	</script>
+</html>

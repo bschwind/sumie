@@ -1,0 +1,29 @@
+html,body
+{
+	margin: 0;
+	padding: 0;
+    height: 100%;
+    width: 100%;
+}
+body
+{
+    display: table;
+}
+#paint-controls {
+    width: 100%;
+    height: 60px;
+    background: #f66;
+    display: table-row;
+
+}
+div+ div
+{
+    height: 100%;
+    display: table-row;
+}
+
+#ink-canvas {
+	width: 100%;
+	height: 100%;
+	background: #E6E6E6;
+}
