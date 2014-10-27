@@ -31,5 +31,20 @@ define(["mathHelper"], function(MathHelper) {
 		return new Vector2(MathHelper.lerp(u.x, v.x, t), MathHelper.lerp(u.y, v.y, t));
 	}
 
+	Vector2.quadCurveVector = function(u, v, w, t) {
+		return new Vector2(
+			MathHelper.quadCurve(u.x, v.x, w.x, t),
+			MathHelper.quadCurve(u.y, v.y, w.y, t)
+		);
+	}
+
+	Vector2.min = function(u, v) {
+		return new Vector2(Math.min(u.x, v.x), Math.min(u.y, v.y));
+	}
+
+	Vector2.max = function(u, v) {
+		return new Vector2(Math.max(u.x, v.x), Math.max(u.y, v.y));
+	}
+
 	return Vector2;
 });

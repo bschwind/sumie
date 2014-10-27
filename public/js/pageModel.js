@@ -10,4 +10,4 @@ define(["knockout"], function(ko) {
 	ko.applyBindings(pageModel);
 
 	return pageModel;
-})
+});
