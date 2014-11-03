@@ -14,7 +14,6 @@ body {
     height: 60px;
     background: #f66;
     display: table-row;
-
 }
 
 div + div {
@@ -27,3 +26,11 @@ div + div {
 	height: 100%;
 	background: #E6E6E6;
 }
+
+#clear-button {
+    float: right;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+

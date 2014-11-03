@@ -1,6 +1,4 @@
 define([], function() {
-
-	//todo - turn this into a mouse pos buffer so we don't lose any positions when running main()
 	function MouseHistory(numElements) {
 		var self = this;
 
