@@ -14,3 +14,7 @@ Build
 Run
 ---
     $ node app.js
+
+Play
+---
+    Open http://localhost:3000
