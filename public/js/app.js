@@ -61,9 +61,6 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 		mouseBuffer.push(newPoint);
 		console.log("mouse down!");
 		mouseDown = true;
-
-		context.beginPath();
-		context.moveTo(newPoint.x, newPoint.y);
 	}
 
 	canvas.addEventListener("mousedown", function(e) {
@@ -99,15 +96,15 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 		e.preventDefault();
 	});
 
-	requestAnimationFrame = window.requestAnimationFrame ||
-		window.mozRequestAnimationFrame ||
-		window.webkitRequestAnimationFrame ||
-		window.msRequestAnimationFrame ||
-		setTimeout;
+	requestAnimationFrame = window.requestAnimationFrame
+		|| window.mozRequestAnimationFrame
+		|| window.webkitRequestAnimationFrame
+		|| window.msRequestAnimationFrame
+		|| setTimeout;
 
 	function main() {
+
 		if (mouseDown) {
-			var lastMidpoint;
 
 			while (mouseBuffer.length > 0) {
 				// Remove the oldest point from the buffer
@@ -115,18 +112,24 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 				mouseHistory.addPoint(newPoint);
 
 				if (mouseHistory.get(0) && mouseHistory.get(1)) {
+					context.beginPath();
 					// context.lineTo(mouseHistory.get(0).x, mouseHistory.get(0).y);
 					var midX = (mouseHistory.get(0).x + mouseHistory.get(1).x) / 2.0;
 					var midY = (mouseHistory.get(0).y + mouseHistory.get(1).y) / 2.0;
-					lastMidpoint = new Vector2(midX, midY);
-					context.quadraticCurveTo(mouseHistory.get(1).x, mouseHistory.get(1).y, midX, midY);
+
+					// If we have at least 3 points
+					if (mouseHistory.get(2)) {
+						var lastMidX = (mouseHistory.get(1).x + mouseHistory.get(2).x) / 2.0;
+						var lastMidY = (mouseHistory.get(1).y + mouseHistory.get(2).y) / 2.0;
+						context.moveTo(lastMidX, lastMidY);
+						context.quadraticCurveTo(mouseHistory.get(1).x, mouseHistory.get(1).y, midX, midY);
+					} else {
+						context.moveTo(mouseHistory.get(1).x, mouseHistory.get(1).y);
+						context.lineTo(midX, midY);
+					}
+
 					context.stroke();
 				}
-			}
-
-			if (lastMidpoint) {
-				context.beginPath();
-				context.moveTo(lastMidpoint.x, lastMidpoint.y);
 			}
 		}
 
