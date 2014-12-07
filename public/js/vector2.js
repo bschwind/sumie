@@ -38,6 +38,18 @@ define(["mathHelper"], function(MathHelper) {
 		);
 	}
 
+	Vector2.vecLength = function(u, v) {
+		var diffX = v.x - u.x;
+		var diffY = v.y - u.y;
+		return Math.sqrt(diffX * diffX + diffY * diffY);
+	}
+
+	Vector2.lengthSquared = function(u, v) {
+		var diffX = v.x - u.x;
+		var diffY = v.y - u.y;
+		return diffX * diffX + diffY * diffY;
+	}
+
 	Vector2.min = function(u, v) {
 		return new Vector2(Math.min(u.x, v.x), Math.min(u.y, v.y));
 	}
