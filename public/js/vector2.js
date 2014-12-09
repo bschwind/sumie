@@ -27,6 +27,10 @@ define(["mathHelper"], function(MathHelper) {
 		}
 	}
 
+	Vector2.dot = function(u, v) {
+		return u.x * v.x + u.y * v.y;
+	}
+
 	Vector2.lerp = function(u, v, t) {
 		return new Vector2(MathHelper.lerp(u.x, v.x, t), MathHelper.lerp(u.y, v.y, t));
 	}
@@ -57,6 +61,27 @@ define(["mathHelper"], function(MathHelper) {
 	Vector2.max = function(u, v) {
 		return new Vector2(Math.max(u.x, v.x), Math.max(u.y, v.y));
 	}
+
+	Vector2.randomPointInUnitCircle = function() {
+		var newPoint = new Vector2((Math.random() * 2) - 1.0, (Math.random() * 2) - 1.0);
+
+		// Only keep points inside the circle
+		if (newPoint.lengthSquared(newPoint) > (1.0)) {
+			return undefined;
+		} else {
+			return newPoint;
+		}
+	}
+
+	Vector2.angleBetweenVectors = function(u, v) {
+        var angle = (Math.acos(Vector2.dot(u, v) / (u.length() * v.length())));
+        
+        if (u.x * v.y - u.y * v.x < 0) {
+            angle = -angle;
+        }
+        
+        return angle;
+    }
 
 	return Vector2;
 });

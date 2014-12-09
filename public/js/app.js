@@ -13,23 +13,12 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 	var mouseHistory = new MouseHistory(3); // Keep track of the last 3 mouse positions
 	var mouseBuffer = []; // Buffer for mouse positions because the mouse events can fire more often than main
 
-	function randomPointInUnitCircle() {
-		var newPoint = new Vector2((Math.random() * 2) - 1.0, (Math.random() * 2) - 1.0);
-
-		// Only keep points inside the circle
-		if (newPoint.lengthSquared(newPoint) > (1.0)) {
-			return undefined;
-		} else {
-			return newPoint;
-		}
-	}
-
 	var radius = 20;
 	var numRandPoints = 400;
 	var pointOffsets = [];
 
 	for (var i = 0; i < numRandPoints; i++) {
-		var randomPoint = randomPointInUnitCircle();
+		var randomPoint = Vector2.randomPointInUnitCircle();
 		if (randomPoint) {
 			pointOffsets.push(randomPoint);
 		}
@@ -129,12 +118,22 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 			var offsetX = pointOffsets[i].x * radius;
 			var offsetY = pointOffsets[i].y * radius;
 
-			context.moveTo(lastMidPoint.x + offsetX, lastMidPoint.y + offsetY);
+			var dir = new Vector2(point.x - lastPoint.x, point.y - lastPoint.y);
+			dir = dir.normalize();
+			var perpDir = new Vector2(-dir.y, dir.x);
+
+			// [a b] | X = (a * x) + (c * y)
+			// [c d] | Y = (b * x) + (d * y)
+
+			var tempOffsetX = (dir.x * offsetX) + (dir.y * offsetY);
+			var tempOffsetY = (perpDir.x * offsetX) + (perpDir.y * offsetY);
+
+			context.moveTo(lastMidPoint.x + tempOffsetX, lastMidPoint.y + tempOffsetY);
 			context.quadraticCurveTo(
-				lastPoint.x + offsetX,
-				lastPoint.y + offsetY,
-				midPoint.x + offsetX,
-				midPoint.y + offsetY);
+				lastPoint.x + tempOffsetX,
+				lastPoint.y + tempOffsetY,
+				midPoint.x + tempOffsetX,
+				midPoint.y + tempOffsetY);
 		}
 	}
 
@@ -159,9 +158,6 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 						if (Vector2.lengthSquared(mouseHistory.get(0), mouseHistory.get(1))) {
 							drawBrushStroke(new Vector2(lastMidX, lastMidY), mouseHistory.get(1), new Vector2(midX, midY), mouseHistory.get(0));
 						}
-					} else {
-						context.moveTo(mouseHistory.get(1).x, mouseHistory.get(1).y);
-						context.lineTo(midX, midY);
 					}
 
 					context.stroke();
