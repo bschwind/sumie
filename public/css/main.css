@@ -27,6 +27,17 @@ div + div {
 	background: #E6E6E6;
 }
 
+#paint-controls > input {
+    width: 10%;
+    font-size: 0.7em;
+}
+
+#paint-controls > label {
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 0.7em;
+}
+
 #clear-button {
     float: right;
     height: 100%;

@@ -10,6 +10,15 @@
 
 	<body>
 		<div id="paint-controls">
+			<label for="numRandPoints">Bristle Count</label>
+			<input id="numRandPoints" type="number" data-bind="textInput: numRandomPoints"/>
+
+			<label for="radius">Radius</label>
+			<input id="radius" type="number" data-bind="textInput: brushRadius"/>
+
+			<label for="numRandPoints">Bristle Width</label>
+			<input id="bristleWidth" type="number" data-bind="textInput: bristleWidth"/>
+
 			<button id="clear-button">Clear</button>
 		</div>
 		<div>
