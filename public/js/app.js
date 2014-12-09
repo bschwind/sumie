@@ -4,7 +4,7 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 	canvas.height = canvas.parentElement.clientHeight;
 
 	var context = canvas.getContext("2d");
-	context.lineWidth = 0.2;
+	context.lineWidth = pageModel.bristleWidth();
 	context.lineJoin = "round";
 	context.lineCap = "round";
 
@@ -13,16 +13,27 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 	var mouseHistory = new MouseHistory(3); // Keep track of the last 3 mouse positions
 	var mouseBuffer = []; // Buffer for mouse positions because the mouse events can fire more often than main
 
-	var radius = 20;
-	var numRandPoints = 400;
-	var pointOffsets = [];
+	var pointOffsets;
 
-	for (var i = 0; i < numRandPoints; i++) {
-		var randomPoint = Vector2.randomPointInUnitCircle();
-		if (randomPoint) {
-			pointOffsets.push(randomPoint);
+	function regenerateRandomPoints() {
+		pointOffsets = [];
+		for (var i = 0; i < pageModel.numRandomPoints(); i++) {
+			var randomPoint = Vector2.randomPointInUnitCircle();
+			if (randomPoint) {
+				pointOffsets.push(randomPoint);
+			}
 		}
 	}
+
+	regenerateRandomPoints();
+
+	pageModel.numRandomPoints.subscribe(function(newValue) {
+		regenerateRandomPoints();
+	});
+
+	pageModel.bristleWidth.subscribe(function(newValue) {
+		context.lineWidth = newValue;
+	});
 
 	function mouseUp() {
 		console.log("Mouse up!");
@@ -99,10 +110,6 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 		context.clearRect(0, 0, canvas.width, canvas.height);
 	});
 
-	document.getElementById("paint-controls").addEventListener("mousedown", function(e) {
-		e.preventDefault();
-	});
-
 	document.getElementById("paint-controls").addEventListener("mousemove", function(e) {
 		e.preventDefault();
 	});
@@ -115,25 +122,15 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 
 	function drawBrushStroke(lastMidPoint, lastPoint, midPoint, point) {
 		for (var i = 0; i < pointOffsets.length; i++) {
-			var offsetX = pointOffsets[i].x * radius;
-			var offsetY = pointOffsets[i].y * radius;
+			var offsetX = pointOffsets[i].x * pageModel.brushRadius();
+			var offsetY = pointOffsets[i].y * pageModel.brushRadius();
 
-			var dir = new Vector2(point.x - lastPoint.x, point.y - lastPoint.y);
-			dir = dir.normalize();
-			var perpDir = new Vector2(-dir.y, dir.x);
-
-			// [a b] | X = (a * x) + (c * y)
-			// [c d] | Y = (b * x) + (d * y)
-
-			var tempOffsetX = (dir.x * offsetX) + (dir.y * offsetY);
-			var tempOffsetY = (perpDir.x * offsetX) + (perpDir.y * offsetY);
-
-			context.moveTo(lastMidPoint.x + tempOffsetX, lastMidPoint.y + tempOffsetY);
+			context.moveTo(lastMidPoint.x + offsetX, lastMidPoint.y + offsetY);
 			context.quadraticCurveTo(
-				lastPoint.x + tempOffsetX,
-				lastPoint.y + tempOffsetY,
-				midPoint.x + tempOffsetX,
-				midPoint.y + tempOffsetY);
+				lastPoint.x + offsetX,
+				lastPoint.y + offsetY,
+				midPoint.x + offsetX,
+				midPoint.y + offsetY);
 		}
 	}
 
