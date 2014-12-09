@@ -1,19 +1,10 @@
 require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageModel, Vector2, MathHelper, MouseHistory) {
-	var canvas = document.getElementById("ink-canvas");
-	canvas.width = canvas.parentElement.clientWidth;
-	canvas.height = canvas.parentElement.clientHeight;
-
-	var context = canvas.getContext("2d");
-	context.lineWidth = pageModel.bristleWidth();
-	context.lineJoin = "round";
-	context.lineCap = "round";
-
-	var mouseDown = false;
-	var mousePos = new Vector2();
-	var mouseHistory = new MouseHistory(3); // Keep track of the last 3 mouse positions
-	var mouseBuffer = []; // Buffer for mouse positions because the mouse events can fire more often than main
-
-	var pointOffsets;
+	var canvas;
+	var context;
+	var mouseDown;
+	var mouseHistory; // Keep track of the last N mouse positions
+	var mouseBuffer; // Buffer for mouse positions because the mouse events can fire more often than main
+	var pointOffsets; // Offsets on a unit circle for each bristle
 
 	function regenerateRandomPoints() {
 		pointOffsets = [];
@@ -25,94 +16,112 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 		}
 	}
 
-	regenerateRandomPoints();
+	function init() {
+		canvas = document.getElementById("ink-canvas");
+		canvas.width = canvas.parentElement.clientWidth;
+		canvas.height = canvas.parentElement.clientHeight;
 
-	pageModel.numRandomPoints.subscribe(function(newValue) {
-		regenerateRandomPoints();
-	});
+		context = canvas.getContext("2d");
+		context.lineWidth = pageModel.bristleWidth();
+		context.lineJoin = "round";
+		context.lineCap = "round";
 
-	pageModel.bristleWidth.subscribe(function(newValue) {
-		context.lineWidth = newValue;
-	});
-
-	function mouseUp() {
-		console.log("Mouse up!");
 		mouseDown = false;
-		mouseHistory.clear();
+		mouseHistory = new MouseHistory(3); // Keep track of the last 3 mouse positions
 		mouseBuffer = [];
+
+		regenerateRandomPoints();
 	}
 
-	window.document.addEventListener("mouseup", mouseUp);
-	window.document.addEventListener("touchend", function(e) {
-		if (e.touches.length === 0) {
-			mouseUp();
-		}
-	});
+	function wireEvents() {
+		function onMouseDown(e, point) {
+			// Prevent the text selection cursor from showing
+			e.preventDefault();
 
-	canvas.addEventListener("mouseover", function(e) {
-		if (mouseDown) {
-			console.log("Resuming mouse after leaving!");
-		}
-	});
-
-	function mouseMove(e, point) {
-		// Prevent the text selection cursor from showing
-		e.preventDefault();
-
-		if (mouseDown) {
 			var rect = canvas.getBoundingClientRect();
-			mouseBuffer.push(new Vector2(point.x - rect.left, point.y - rect.top));
+			var newPoint = new Vector2(point.x - rect.left, point.y - rect.top);
+			mouseBuffer.push(newPoint);
+			console.log("mouse down!");
+			mouseDown = true;
 		}
-	}
 
-	canvas.addEventListener("mousemove", function(e) {
-		mouseMove(e, new Vector2(e.clientX, e.clientY));
-	});
+		function onMouseMove(e, point) {
+			// Prevent the text selection cursor from showing
+			e.preventDefault();
 
-	canvas.addEventListener("touchmove", function(e) {
-		var touch = e.touches[0];
-		mouseMove(e, new Vector2(touch.clientX, touch.clientY));
-	});
+			if (mouseDown) {
+				var rect = canvas.getBoundingClientRect();
+				mouseBuffer.push(new Vector2(point.x - rect.left, point.y - rect.top));
+			}
+		}
 
-	function onMouseDown(e, point) {
-		// Prevent the text selection cursor from showing
-		e.preventDefault();
+		function onMouseOut() {
+			if (mouseDown) {
+				console.log("leaving drawing area but still drawing!");
+				mouseHistory.clear();
+				mouseBuffer = [];
+			}
+		}
 
-		var rect = canvas.getBoundingClientRect();
-		var newPoint = new Vector2(point.x - rect.left, point.y - rect.top);
-		mouseBuffer.push(newPoint);
-		console.log("mouse down!");
-		mouseDown = true;
-	}
-
-	canvas.addEventListener("mousedown", function(e) {
-		onMouseDown(e, new Vector2(e.clientX, e.clientY));
-	});
-
-	canvas.addEventListener("touchstart", function(e) {
-		var touch = e.touches[0];
-		onMouseDown(e, new Vector2(touch.clientX, touch.clientY));
-	});
-
-	function mouseOut() {
-		if (mouseDown) {
-			console.log("leaving drawing area but still drawing!");
+		function onMouseUp() {
+			console.log("Mouse up!");
+			mouseDown = false;
 			mouseHistory.clear();
 			mouseBuffer = [];
 		}
+
+		window.document.addEventListener("mouseup", onMouseUp);
+		window.document.addEventListener("touchend", function(e) {
+			if (e.touches.length === 0) {
+				onMouseUp();
+			}
+		});
+
+		canvas.addEventListener("mouseover", function(e) {
+			if (mouseDown) {
+				console.log("Resuming mouse after leaving!");
+			}
+		});
+
+		canvas.addEventListener("mousemove", function(e) {
+			onMouseMove(e, new Vector2(e.clientX, e.clientY));
+		});
+
+		canvas.addEventListener("touchmove", function(e) {
+			var touch = e.touches[0];
+			onMouseMove(e, new Vector2(touch.clientX, touch.clientY));
+		});
+
+		canvas.addEventListener("mousedown", function(e) {
+			onMouseDown(e, new Vector2(e.clientX, e.clientY));
+		});
+
+		canvas.addEventListener("touchstart", function(e) {
+			var touch = e.touches[0];
+			onMouseDown(e, new Vector2(touch.clientX, touch.clientY));
+		});
+
+		canvas.addEventListener("mouseout", onMouseOut);
+		canvas.addEventListener("touchcancel", onMouseOut);
+		canvas.addEventListener("touchleave", onMouseOut);
+
+		document.getElementById("clear-button").addEventListener("click", function() {
+			context.clearRect(0, 0, canvas.width, canvas.height);
+		});
+
+		document.getElementById("paint-controls").addEventListener("mousemove", function(e) {
+			e.preventDefault();
+		});
+
+		pageModel.numRandomPoints.subscribe(function(newValue) {
+			// If the user changes the number or bristles, regenerate our point offsets
+			regenerateRandomPoints();
+		});
+
+		pageModel.bristleWidth.subscribe(function(newValue) {
+			context.lineWidth = newValue;
+		});
 	}
-
-	canvas.addEventListener("mouseout", mouseOut);
-	canvas.addEventListener("touchcancel", mouseOut);
-	canvas.addEventListener("touchleave", mouseOut);
-
-	document.getElementById("clear-button").addEventListener("click", function() {
-		context.clearRect(0, 0, canvas.width, canvas.height);
-	});
-
-	document.getElementById("paint-controls").addEventListener("mousemove", function(e) {
-		e.preventDefault();
-	});
 
 	requestAnimationFrame = window.requestAnimationFrame
 		|| window.mozRequestAnimationFrame
@@ -165,5 +174,7 @@ require(["pageModel", "vector2", "mathHelper", "mouseHistory"], function(pageMod
 		requestAnimationFrame(main);
 	}
 
+	init();
+	wireEvents();
 	main();
 });
